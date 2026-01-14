@@ -1,0 +1,12 @@
+<resources>
+    <string name="app_name">Generasi Komputer</string>
+    <string name="generasi_title">🖥️ Generasi Komputer</string>
+    <string name="splash_title">Generasi Komputer</string>
+    <string name="login_title">🔐 Generasi Komputer</string>
+    <string name="hint_username">Username</string>
+    <string name="hint_password">Password</string>
+    <string name="btn_login">MASUK</string>
+    <string name="login_credentials">admin / 123</string>
+    <string name="btn_logout">LOGOUT</string>
+    <string name="gambar_generasi">Gambar Generasi Komputer</string>
+</resources>

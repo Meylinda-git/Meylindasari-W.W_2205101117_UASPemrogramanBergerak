@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <title>Fantasy Archer - Level Mode 🎯</title>
+  <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
+  <style>
+    body { margin: 0; overflow: hidden; }
+    .scoreboard {
+      position: fixed;
+      top: 10px;
+      left: 10px;
+      padding: 8px 14px;
+      background: rgba(0,0,0,0.5);
+      color: white;
+      font-family: sans-serif;
+      border-radius: 10px;
+      font-size: 18px;
+      z-index: 100;
+    }
+    .popup {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: white;
+      padding: 30px;
+      border-radius: 12px;
+      box-shadow: 0 0 20px rgba(0,0,0,0.4);
+      text-align: center;
+      display: none;
+      z-index: 200;
+    }
+    .popup h2 { margin-top: 0; }
+    .popup button {
+      margin: 10px;
+      padding: 10px 20px;
+      font-size: 16px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+    .btn-restart { background: #28a745; color: white; }
+    .btn-next { background: #007bff; color: white; }
+  </style>
+</head>
+<body>
+  <div class="scoreboard" id="scoreBox">🎯 Level 1 - Skor: 0 / 5</div>
+
+  <div class="popup" id="popup">
+    <h2 id="popup-title">Level Selesai!</h2>
+    <p id="popup-score">Skor: 0 / 0</p>
+    <button class="btn-restart" onclick="startLevel(currentLevel)">🔁 Main Lagi</button>
+    <button class="btn-next" onclick="startLevel(currentLevel+1)">⏭️ Lanjut Level</button>
+  </div>
+
+  <a-scene cursor="rayOrigin: mouse">
+    <!-- Kamera & Cursor -->
+    <a-entity id="cameraRig" position="0 1.6 0">
+      <a-camera id="camera" wasd-controls look-controls>
+        <a-entity 
+          id="cursor"
+          raycaster="objects: .target"
+          position="0 0 -1"
+          geometry="primitive: ring; radiusInner: 0.01; radiusOuter: 0.02"
+          material="color: white; shader: flat">
+        </a-entity>
+      </a-camera>
+    </a-entity>
+
+    <!-- Langit & Tanah -->
+    <a-sphere radius="50" color="#ff9a9e" position="0 0 0" material="shader: flat; side: back;"></a-sphere>
+    <a-plane rotation="-90 0 0" width="100" height="100" color="#3e823e"></a-plane>
+
+    <!-- Target & Pohon -->
+    <a-entity id="target-container"></a-entity>
+    <a-entity id="trees"></a-entity>
+
+    <!-- Cahaya -->
+    <a-entity light="type: ambient; intensity: 1"></a-entity>
+    <a-entity light="type: directional; intensity: 0.6" position="1 4 2"></a-entity>
+
+    <script>
+      const scoreBox = document.getElementById('scoreBox');
+      const popup = document.getElementById('popup');
+      const popupTitle = document.getElementById('popup-title');
+      const popupScore = document.getElementById('popup-score');
+      const targetContainer = document.getElementById('target-container');
+      const treeContainer = document.getElementById('trees');
+      const camera = document.querySelector('#camera');
+
+      let score = 0;
+      let totalTarget = 5;
+      let currentLevel = 1;
+
+      const levelData = {
+        1: 5,
+        2: 8,
+        3: 10
+      };
+
+      function clearTargets() {
+        while (targetContainer.firstChild) {
+          targetContainer.removeChild(targetContainer.firstChild);
+        }
+      }
+
+      function clearTrees() {
+        while (treeContainer.firstChild) {
+          treeContainer.removeChild(treeContainer.firstChild);
+        }
+      }
+
+      function spawnTree(x, z) {
+        const trunk = document.createElement('a-box');
+        trunk.setAttribute('position', `${x} 1 ${z}`);
+        trunk.setAttribute('depth', '0.4');
+        trunk.setAttribute('height', '2');
+        trunk.setAttribute('width', '0.4');
+        trunk.setAttribute('color', '#5d4037');
+        treeContainer.appendChild(trunk);
+
+        for (let i = 0; i < 3; i++) {
+          const leaf = document.createElement('a-cone');
+          const height = 1.2 - i * 0.2;
+          const radius = 1 - i * 0.2;
+          const y = 2 + i * 0.6;
+          leaf.setAttribute('position', `${x} ${y} ${z}`);
+          leaf.setAttribute('height', height);
+          leaf.setAttribute('radius-bottom', radius);
+          leaf.setAttribute('radius-top', '0.1');
+          leaf.setAttribute('color', '#2e7d32');
+          treeContainer.appendChild(leaf);
+        }
+      }
+
+      function spawnTarget() {
+        const target = document.createElement('a-sphere');
+        const x = (Math.random() * 6 - 3).toFixed(2);
+        const y = (Math.random() * 1 + 1.2).toFixed(2);
+        const z = (Math.random() * -4 - 3).toFixed(2);
+        target.setAttribute('position', `${x} ${y} ${z}`);
+        target.setAttribute('radius', '0.3');
+        target.setAttribute('color', '#ff3333');
+        target.setAttribute('light', 'type: point; intensity: 2; distance: 4; color: #ff0000');
+        target.setAttribute('class', 'target');
+        targetContainer.appendChild(target);
+      }
+
+      function shootArrow(from, to, targetEl) {
+        const arrow = document.createElement('a-entity');
+        arrow.setAttribute('position', `${from.x} ${from.y} ${from.z}`);
+
+        const shaft = document.createElement('a-cylinder');
+        shaft.setAttribute('radius', 0.025);
+        shaft.setAttribute('height', 0.6);
+        shaft.setAttribute('color', '#8b4513');
+        shaft.setAttribute('rotation', '90 0 0');
+        shaft.setAttribute('position', '0 0 0');
+
+        const tip = document.createElement('a-cone');
+        tip.setAttribute('radius-bottom', 0.05);
+        tip.setAttribute('height', 0.2);
+        tip.setAttribute('position', '0 0.35 0');
+        tip.setAttribute('rotation', '0 0 0');
+        tip.setAttribute('color', '#333');
+
+        arrow.appendChild(shaft);
+        arrow.appendChild(tip);
+
+        const dirX = to.x - from.x;
+        const dirY = to.y - from.y;
+        const dirZ = to.z - from.z;
+        const distance = Math.sqrt(dirX ** 2 + dirY ** 2 + dirZ ** 2);
+        const speed = 0.005;
+        const duration = distance / speed;
+
+        arrow.setAttribute('animation__move', {
+          property: 'position',
+          to: `${to.x} ${to.y} ${to.z}`,
+          dur: duration,
+          easing: 'linear'
+        });
+
+        arrow.addEventListener('animationcomplete__move', () => {
+          arrow.remove();
+          if (targetEl && targetEl.parentNode) {
+            targetEl.setAttribute('color', '#ffff33');
+            targetEl.setAttribute('animation__explode', {
+              property: 'scale',
+              to: '2 2 2',
+              dur: 150,
+              easing: 'easeOutQuad'
+            });
+            targetEl.setAttribute('animation__shrink', {
+              property: 'scale',
+              to: '0 0 0',
+              dur: 150,
+              delay: 150,
+              easing: 'easeInQuad'
+            });
+
+            setTimeout(() => {
+              targetEl.remove();
+              score++;
+              scoreBox.innerText = `🎯 Level ${currentLevel} - Skor: ${score} / ${totalTarget}`;
+              if (score >= totalTarget) {
+                showPopup();
+              } else {
+                spawnTarget();
+              }
+            }, 350);
+          }
+        });
+
+        document.querySelector('a-scene').appendChild(arrow);
+      }
+
+      function showPopup() {
+        popup.style.display = 'block';
+        popupTitle.innerText = `🎉 Level ${currentLevel} Selesai!`;
+        popupScore.innerText = `Skor: ${score} / ${totalTarget}`;
+      }
+
+      function startLevel(level) {
+        currentLevel = level;
+        popup.style.display = 'none';
+        clearTargets();
+        clearTrees();
+        score = 0;
+        totalTarget = levelData[level] || 5;
+        scoreBox.innerText = `🎯 Level ${level} - Skor: 0 / ${totalTarget}`;
+
+        for (let i = 0; i < 10; i++) {
+          const x = (Math.random() * 30 - 15).toFixed(2);
+          const z = (Math.random() * 30 - 20).toFixed(2);
+          spawnTree(x, z);
+        }
+        for (let i = 0; i < 3; i++) spawnTarget();
+      }
+
+      window.addEventListener('keydown', e => {
+        if (e.code === 'Space') {
+          const cursor = document.querySelector('#cursor');
+          const intersection = cursor.components.raycaster.intersections[0];
+          if (intersection && intersection.object.el.classList.contains('target')) {
+            const target = intersection.object.el;
+            const targetPos = target.object3D.getWorldPosition(new THREE.Vector3());
+            const cameraPos = camera.object3D.getWorldPosition(new THREE.Vector3());
+            shootArrow(cameraPos, targetPos, target);
+          }
+        }
+      });
+
+      // Mulai Level 1
+      startLevel(1);
+    </script>
+  </a-scene>
+</body>
+</html>

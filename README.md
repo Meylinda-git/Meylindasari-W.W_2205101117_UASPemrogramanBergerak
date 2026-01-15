@@ -1,7 +1,7 @@
 # LAPORAN HASIL UJIAN AKHIR SEMESTER PEMROGRAMAN BERGERAK 
 # Generasi Komputer ID - Edukasi Evolusi Komputer
 
-**Aplikasi Generasi Komputer ID** merupakan aplikasi mobile Android yang dikembangkan untuk keperluan edukasi akademik, khususnya memvisualisasikan **perkembangan 5 generasi komputer** secara kronologis. Aplikasi ini mengadopsi arsitektur **minimalis** yang hanya terdiri dari **Loading Screen** dan **ListView Generasi Komputer** dengan deskripsi teknis masing-masing generasi.
+**Aplikasi Generasi Komputer ID** merupakan aplikasi mobile Android yang dikembangkan untuk keperluan edukasi akademik, khususnya memvisualisasikan **perkembangan 5 generasi komputer** secara kronologis. Aplikasi ini mengadopsi arsitektur **minimalis** yang hanya terdiri dari **Loading Screen** dan **ListView Generasi Komputer** dan **Deskripsi Generasi** secara teknis.
 
 **Proyek ini disusun untuk memenuhi syarat Tugas Akhir (UAS) Mata Kuliah Pemrograman Bergerak.**
 
@@ -47,9 +47,9 @@ Seluruh dokumentasi visual terdapat di 'Publish Assets/Screnshoots' dalam repost
 | **Nama Aplikasi** | Generasi Komputer ID |
 | **Kategori** | Education |
 | **Kontak Developer** | meylindasari.dev@gmail.com |
-| **Kebijakan Privasi** | [**PRIVACY_POLICY.md**] |
+| **Kebijakan Privas** | sudah tercantum pada **PRIVACY_POLICY.md** dalam repository|
 
 ---
 
-**Hak Cipta © 2026 Meylinda Sari W.W - 2205101117**  
-**UAS Pemrograman Bergerak - Politeknik Elektronika Negeri Surabaya (PENS)**
+**Hak Cipta © 2026 Meylindasari W.W - 2205101117**  
+**UAS Pemrograman Bergerak**
